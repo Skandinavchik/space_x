@@ -3,12 +3,14 @@ import { Launch, useLaunchesPastQuery } from '../gql/graphql'
 import { Button } from '@mui/material'
 import Pagination from '@mui/material/Pagination'
 import { useLaunchesCountStore } from '../zustand/launchesStore'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import Search from '../components/Search'
 
 
 const Launches = () => {
 
 	const [page, setPage] = useState<number>(1)
+	const [searchResult, setSearchResult] = useState<Launch[]>([])
 	const { count, setCount, reset } = useLaunchesCountStore()
 	const [result] = useLaunchesPastQuery()
 	const { data, fetching, error } = result
@@ -34,6 +36,11 @@ const Launches = () => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [])
 
+	const handleSearchResult = useCallback((data: Launch[]) => {
+		setSearchResult(data)
+	}, [])
+
+
 	if (error) {
 		return (
 			<main>
@@ -50,9 +57,13 @@ const Launches = () => {
 				<div className='p-4 xl:px-0 mt-[3.5rem] min-h-[calc(100dvh-3.5rem)] flex flex-col justify-between gap-6'>
 					<div>
 						<h1 className='mb-2 text-lg font-medium font-mono'>Launches</h1>
+						<Search
+							data={updatedData}
+							searchResult={handleSearchResult}
+						/>
 						<LaunchesGrid
 							count={count}
-							data={updatedData}
+							data={searchResult.length ? searchResult : updatedData}
 							page={page}
 						/>
 					</div>
@@ -61,14 +72,17 @@ const Launches = () => {
 							disabled={fetching}
 							variant={'contained'}
 							onClick={setCount}
-							sx={{ width: '100%', fontFamily: 'monospace' }}
+							sx={{
+								width: '100%',
+								fontFamily: 'monospace'
+							}}
 						>
 							{`${fetching ? 'Loading...' : 'Show more'}`}
 						</Button>
 					</div>
 					<div className='hidden lg:flex justify-center'>
 						<Pagination
-							count={Math.ceil(updatedData.length / count)}
+							count={Math.ceil(searchResult.length ? searchResult.length / count : updatedData.length / count)}
 							onChange={handleChange}
 							page={page}
 							color="primary"

@@ -1,0 +1,7 @@
+overwrite: true
+schema: "https://main--spacex-l4uc6p.apollographos.net/graphql"
+documents: "src/graphql/*.graphql"
+generates:
+  src/gql/:
+    preset: "client"
+    plugins: ['typescript', 'typescript-operations', 'typescript-urql']
